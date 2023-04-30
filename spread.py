@@ -9,7 +9,7 @@ import numpy as np
 kospi=pd.read_csv('kcointegration.csv')
 Sp500=pd.read_csv('sp500modify.csv')
 Sp500['Date'] = pd.to_datetime(Sp500['Date'], format='%Y-%m-%d')
-tickers = stock.get_market_ticker_list("20230225", market="KOSDAQ")
+tickers = stock.get_market_ticker_list("20230225")
 kospi['코드']=kospi['코드'].astype(str)
 
 result = []
@@ -22,11 +22,11 @@ for code in kospi['코드']:
     kospi_data = pd.merge(kospi_data, Sp500, how='inner', left_on='날짜', right_on='Date')
     
     # 등락률 계산
-    kospi_data['kosdaq_rtn'] = kospi_data['종가'].pct_change()
+    kospi_data['kospi_rtn'] = kospi_data['종가'].pct_change()
     kospi_data['sp500_rtn'] = kospi_data['Close'].pct_change()
     
     # spread 계산
-    kospi_data['spread'] = kospi_data['kosdaq_rtn'] - kospi_data['sp500_rtn']
+    kospi_data['spread'] = kospi_data['kospi_rtn'] - kospi_data['sp500_rtn']
     
     # z-score 계산
     kospi_data['zscore'] = (kospi_data['spread'] - np.mean(kospi_data['spread'])) / np.std(kospi_data['spread'])
@@ -35,6 +35,6 @@ for code in kospi['코드']:
     
 # 종목별 결과 합치기
 df = pd.concat(result, axis=0)
-df = df[['날짜', '시가', '종가', '거래량', '종목', 'kosdaq_rtn', 'sp500_rtn', 'spread', 'zscore']]
+df = df[['날짜', '시가', '종가', '거래량', '종목', 'kospi_rtn', 'sp500_rtn', 'spread', 'zscore']]
 
 df.to_csv('kzscore.csv', encoding='utf-8-sig')
